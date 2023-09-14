@@ -35,6 +35,7 @@ func CreateWarning(warningPayload models.Warning) (*models.Warning, error) {
 		fmt.Println("findWarning0")
 
 		payload = models.Warning{
+			ID:     1,
 			Water:  warningPayload.Water,
 			Wind:   warningPayload.Wind,
 			Status: "aman",
@@ -44,6 +45,7 @@ func CreateWarning(warningPayload models.Warning) (*models.Warning, error) {
 		fmt.Println("findWarning3")
 
 		payload = models.Warning{
+			ID:     1,
 			Water:  warningPayload.Water,
 			Wind:   warningPayload.Wind,
 			Status: "siaga",
@@ -53,6 +55,7 @@ func CreateWarning(warningPayload models.Warning) (*models.Warning, error) {
 		fmt.Println("findWarning4")
 
 		payload = models.Warning{
+			ID:     1,
 			Water:  warningPayload.Water,
 			Wind:   warningPayload.Wind,
 			Status: "aman",
@@ -62,6 +65,7 @@ func CreateWarning(warningPayload models.Warning) (*models.Warning, error) {
 		fmt.Println("findWarning5")
 
 		payload = models.Warning{
+			ID:     1,
 			Status: "siaga",
 			Water:  warningPayload.Water,
 			Wind:   warningPayload.Wind,
@@ -70,6 +74,7 @@ func CreateWarning(warningPayload models.Warning) (*models.Warning, error) {
 	case warningPayload.Wind > 15:
 		fmt.Println("findWarning6")
 		payload = models.Warning{
+			ID:     1,
 			Status: "bahaya",
 			Water:  warningPayload.Water,
 			Wind:   warningPayload.Wind,
@@ -107,33 +112,49 @@ func init() {
 	StartDB()
 }
 
-func getStatus(ctx *gin.Context) {
-	var result = models.Warning{}
+// func GetBookings(c *gin.Context) {
+// 	var bookings []models.Booking
 
-	fmt.Println("get status result", result)
-	if err := ctx.ShouldBindJSON(&result); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest,
-			gin.H{
-				"status":  "VALIDATEERR-1",
-				"message": "Invalid inputs. Please check your inputs"})
-		return
+//		if err := models.DB.Find(&bookings).Error; err != nil {
+//			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+//			return
+//		}
+//		c.JSON(http.StatusOK, bookings)
+//	}
+func getStatus(ctx *gin.Context) {
+	var warning = []models.Warning{}
+	err := db.Find(&warning).Error
+	if err != nil {
+		fmt.Println("a", err.Error())
 	}
-	// if result.Error != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error find data", "message": err.Error()})
+	// fmt.Println("get status result", &result)
+	// because of get no need to bind to json
+	// if err := ctx.ShouldBindJSON(&result); err != nil {
+	// 	fmt.Println("err", err)
+	// 	ctx.AbortWithStatusJSON(http.StatusBadRequest,
+	// 		gin.H{
+	// 			"status":  "VALIDATEERR-1",
+	// 			"message": "Invalid inputs. Please check your inputs"})
 	// 	return
 	// }
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error find data", "message": err.Error()})
+		return
+	}
 
 	// if result.Error != nil {
 	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error result", "message": err.Error()})
 	// 	return
 	// }
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"data": result}})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"data": warning}})
 	return
 
 }
 
 func AutoReload(warning models.Warning) {
 	payload := models.Warning{
+		ID:    1,
 		Water: warning.Water,
 		Wind:  warning.Wind,
 	}
@@ -142,6 +163,7 @@ func AutoReload(warning models.Warning) {
 		fmt.Println("findWarning0")
 
 		payload = models.Warning{
+			ID:     1,
 			Water:  warning.Water,
 			Wind:   warning.Wind,
 			Status: "aman",
@@ -151,6 +173,7 @@ func AutoReload(warning models.Warning) {
 		fmt.Println("findWarning3")
 
 		payload = models.Warning{
+			ID:     1,
 			Water:  warning.Water,
 			Wind:   warning.Wind,
 			Status: "siaga",
@@ -160,6 +183,7 @@ func AutoReload(warning models.Warning) {
 		fmt.Println("findWarning4")
 
 		payload = models.Warning{
+			ID:     1,
 			Water:  warning.Water,
 			Wind:   warning.Wind,
 			Status: "aman",
@@ -169,6 +193,7 @@ func AutoReload(warning models.Warning) {
 		fmt.Println("findWarning5")
 
 		payload = models.Warning{
+			ID:     1,
 			Status: "siaga",
 			Water:  warning.Water,
 			Wind:   warning.Wind,
@@ -177,6 +202,7 @@ func AutoReload(warning models.Warning) {
 	case warning.Wind > 15:
 		fmt.Println("findWarning6")
 		payload = models.Warning{
+			ID:     1,
 			Status: "bahaya",
 			Water:  warning.Water,
 			Wind:   warning.Wind,

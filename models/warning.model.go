@@ -2,12 +2,10 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Warning struct {
-	gorm.Model
+	ID        uint      `gorm:"primaryKey" json:"-"`
 	Water     uint32    `gorm:"not_null" json:"water"`
 	Wind      uint32    `gorm:"not_null" json:"wind"`
 	Status    string    `gorm:"not_null" json:"status"`
