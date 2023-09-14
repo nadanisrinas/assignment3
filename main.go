@@ -4,6 +4,7 @@ import (
 	"assignment3/models"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -22,51 +23,68 @@ var (
 	err      error
 )
 
-func AutoReload() (*models.Warning, error) {
+func CreateWarning(warningPayload models.Warning) (*models.Warning, error) {
 	var warning models.Warning
+
 	payload := models.Warning{
-		ID: 2,
+		Water: warningPayload.Water,
+		Wind:  warningPayload.Wind,
 	}
 	switch {
-	case warning.Water < 5:
+	case warningPayload.Water < 5:
+		fmt.Println("findWarning0")
+
 		payload = models.Warning{
-			ID:     payload.ID,
+			Water:  warningPayload.Water,
+			Wind:   warningPayload.Wind,
 			Status: "aman",
 		}
 		break
-	case warning.Water >= 6 && warning.Water <= 8:
+	case warningPayload.Water >= 6 && warningPayload.Water <= 8:
+		fmt.Println("findWarning3")
+
 		payload = models.Warning{
-			ID:     payload.ID,
+			Water:  warningPayload.Water,
+			Wind:   warningPayload.Wind,
 			Status: "siaga",
 		}
 		break
-	case warning.Wind < 6:
+	case warningPayload.Wind < 6:
+		fmt.Println("findWarning4")
+
 		payload = models.Warning{
-			ID:     payload.ID,
+			Water:  warningPayload.Water,
+			Wind:   warningPayload.Wind,
 			Status: "aman",
 		}
 		break
-	case warning.Wind >= 7 && warning.Wind <= 15:
+	case warningPayload.Wind >= 7 && warningPayload.Wind <= 15:
+		fmt.Println("findWarning5")
+
 		payload = models.Warning{
-			ID:     payload.ID,
 			Status: "siaga",
+			Water:  warningPayload.Water,
+			Wind:   warningPayload.Wind,
 		}
 		break
-	case warning.Wind > 15:
+	case warningPayload.Wind > 15:
+		fmt.Println("findWarning6")
 		payload = models.Warning{
-			ID:     payload.ID,
 			Status: "bahaya",
+			Water:  warningPayload.Water,
+			Wind:   warningPayload.Wind,
 		}
 		break
 	default:
 		fmt.Printf("%s.\n", "why")
 	}
 
-	result := db.Save(&payload)
-	if result.Error != nil {
-		return &warning, result.Error
+	resultCreate := db.Create(&payload)
+	if resultCreate.Error != nil {
+		log.Fatal("resultCreate.Error", resultCreate.Error)
+		return &warning, resultCreate.Error
 	}
-	// fmt.Println(&warning, nil)
+
 	return &warning, nil
 }
 func StartDB() {
@@ -90,31 +108,120 @@ func init() {
 }
 
 func getStatus(ctx *gin.Context) {
-	var warning models.Warning
-	if err := ctx.BindJSON(&warning); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
-	}
-	result := db.Find(&warning)
-	if result.Error != nil {
-		log.Fatal("Error get status data", result.Error)
-	}
+	var result = models.Warning{}
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+	fmt.Println("get status result", result)
+	if err := ctx.ShouldBindJSON(&result); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{
+				"status":  "VALIDATEERR-1",
+				"message": "Invalid inputs. Please check your inputs"})
+		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"data": warning}})
+	// if result.Error != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error find data", "message": err.Error()})
+	// 	return
+	// }
+
+	// if result.Error != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error result", "message": err.Error()})
+	// 	return
+	// }
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"data": result}})
+	return
 
 }
-func main() {
+
+func AutoReload(warning models.Warning) {
+	payload := models.Warning{
+		Water: warning.Water,
+		Wind:  warning.Wind,
+	}
+	switch {
+	case warning.Water < 5:
+		fmt.Println("findWarning0")
+
+		payload = models.Warning{
+			Water:  warning.Water,
+			Wind:   warning.Wind,
+			Status: "aman",
+		}
+		break
+	case warning.Water >= 6 && warning.Water <= 8:
+		fmt.Println("findWarning3")
+
+		payload = models.Warning{
+			Water:  warning.Water,
+			Wind:   warning.Wind,
+			Status: "siaga",
+		}
+		break
+	case warning.Wind < 6:
+		fmt.Println("findWarning4")
+
+		payload = models.Warning{
+			Water:  warning.Water,
+			Wind:   warning.Wind,
+			Status: "aman",
+		}
+		break
+	case warning.Wind >= 7 && warning.Wind <= 15:
+		fmt.Println("findWarning5")
+
+		payload = models.Warning{
+			Status: "siaga",
+			Water:  warning.Water,
+			Wind:   warning.Wind,
+		}
+		break
+	case warning.Wind > 15:
+		fmt.Println("findWarning6")
+		payload = models.Warning{
+			Status: "bahaya",
+			Water:  warning.Water,
+			Wind:   warning.Wind,
+		}
+		break
+	default:
+		fmt.Printf("%s.\n", "why")
+	}
+
+	resultUpdate := db.Save(&payload)
+	if resultUpdate.Error != nil {
+		log.Fatal("resultUpdate.Error", resultUpdate.Error)
+	}
+}
+
+func AutoReloadTick(warning models.Warning) {
 	for range time.Tick(time.Second * 15) {
 		fmt.Println("this function will run every 15 seconds")
-		AutoReload()
+		AutoReload(warning)
+
 	}
-	warning := models.Warning{Wind: 5, Water: 5}
-	result := db.Create(&warning)
-	if result.Error != nil {
-		log.Fatal("error", result.Error)
+}
+
+func randU32(min, max uint32) uint32 {
+	var a = rand.Uint32()
+	a %= (max - min)
+	a += min
+	return a
+}
+
+func main() {
+	var min uint32 = 1
+	var max uint32 = 100
+	randWater := randU32(min, max)
+	randWind := randU32(min, max)
+
+	warning := models.Warning{Wind: randWind, Water: randWater}
+
+	resultCreateWarning, err := CreateWarning(warning)
+	if err != nil {
+		log.Fatal("resultCreateWarning", resultCreateWarning)
 	}
+	go AutoReloadTick(warning)
+
+	// fmt.Println("warning1", warning.ID)
 	router := gin.Default()
 	router.GET("/status", getStatus)
 
